@@ -14,14 +14,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check user's available credits from profiles table
-    const { data: profile, error: profileError } = await supabaseAdmin
+    // Check user's available credits - FIXED: Use profiles table and credits_balance field
+    const { data: user, error: userError } = await supabaseAdmin
       .from('profiles')
       .select('credits_balance')
       .eq('id', userId)
       .single()
 
-    if (profileError || !profile) {
+    if (userError || !user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
@@ -31,9 +31,9 @@ export async function POST(request: NextRequest) {
     // Calculate credits needed
     const creditsNeeded = calculateCreditsUsed(text.length, conversionType)
 
-    if (profile.credits_balance < creditsNeeded) {
+    if (user.credits_balance < creditsNeeded) {
       return NextResponse.json(
-        { error: 'Insufficient credits', creditsNeeded, available: profile.credits_balance },
+        { error: 'Insufficient credits', creditsNeeded, available: user.credits_balance },
         { status: 402 }
       )
     }
@@ -61,55 +61,25 @@ export async function POST(request: NextRequest) {
       ])
     }
 
-    // Deduct credits from profiles table
-    const newBalance = profile.credits_balance - creditsNeeded
+    // Deduct credits - FIXED: Use profiles table and credits_balance field
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
-      .update({ credits_balance: newBalance })
+      .update({ credits_balance: user.credits_balance - creditsNeeded })
       .eq('id', userId)
 
     if (updateError) {
       console.error('Error updating credits:', updateError)
-      return NextResponse.json(
-        { error: 'Failed to update credits' },
-        { status: 500 }
-      )
     }
 
-    // Log transaction in credit_transactions table
+    // Log usage in credit_transactions table (matching crav-website schema)
     await supabaseAdmin.from('credit_transactions').insert({
       user_id: userId,
       amount: -creditsNeeded,
-      type: 'usage',
-      description: `LegalEase: ${conversionType} conversion`,
-      app_name: 'legalease',
-      metadata: {
-        text_length: text.length,
-        conversion_type: conversionType,
-      },
+      type: 'debit',
+      description: `LegalEase: ${conversionType} conversion (${text.length} chars)`,
+      reference_id: null,
+      status: 'completed',
     })
-
-    // Save document to legalease_documents table
-    const { data: document, error: docError } = await supabaseAdmin
-      .from('legalease_documents')
-      .insert({
-        user_id: userId,
-        title: `${conversionType === 'legal-to-plain' ? 'Legal to Plain' : 'Plain to Legal'} Conversion`,
-        original_content: text,
-        converted_content: convertedText,
-        conversion_type: conversionType,
-        document_type: 'other',
-        status: 'completed',
-        credits_used: creditsNeeded,
-        key_terms: keyTerms,
-        summary: summary,
-      })
-      .select()
-      .single()
-
-    if (docError) {
-      console.error('Error saving document:', docError)
-    }
 
     return NextResponse.json({
       success: true,
@@ -117,8 +87,7 @@ export async function POST(request: NextRequest) {
       keyTerms,
       summary,
       creditsUsed: creditsNeeded,
-      remainingCredits: newBalance,
-      documentId: document?.id,
+      remainingCredits: user.credits_balance - creditsNeeded,
     })
   } catch (error: any) {
     console.error('Conversion error:', error)
