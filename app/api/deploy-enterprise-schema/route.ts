@@ -2,27 +2,31 @@ import { NextResponse } from 'next/server'
 import { Client } from 'pg'
 
 export async function POST(request: Request) {
-  const client = new Client({
-    host: 'aws-0-us-east-1.pooler.supabase.com',
-    port: 6543,
-    database: 'postgres',
-    user: 'postgres.kteobfyferrukqeolofj',
-    password: process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    ssl: { rejectUnauthorized: false }
-  })
-
+  let client: Client | null = null
+  
   try {
     const { token } = await request.json()
     if (token !== 'deploy-enterprise-schema-2025') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    console.log('🔄 Connecting to database...')
+    console.log('🔄 Connecting to Supabase PostgreSQL...')
+    
+    client = new Client({
+      host: 'aws-0-us-east-1.pooler.supabase.com',
+      port: 6543,
+      database: 'postgres',
+      user: 'postgres.kteobfyferrukqeolofj',
+      password: process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0ZW9iZnlmZXJydWtxZW9sb2ZqIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjE5NzI2NiwiZXhwIjoyMDc3NTU3MjY2fQ.5baSBOBpBzcm5LeV4tN2H0qQJGNJoH0Q06ROwhbijCI',
+      ssl: { rejectUnauthorized: false }
+    })
+
     await client.connect()
-    console.log('✅ Connected successfully')
+    console.log('✅ Connected to database')
 
     // Execute the entire enterprise schema
-    const schema = `-- ============================================================================
+    console.log('🔄 Executing enterprise schema...')
+    const result = await client.query(`-- ============================================================================
 -- LEGALEASE AI - COMPLETE ENTERPRISE DOCUMENT MANAGEMENT SYSTEM
 -- ============================================================================
 -- Features: Organizations, Teams, Roles, Advanced Document Management,
@@ -824,10 +828,7 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 -- Total Indexes: 80+
 -- Total Policies: 15+
 -- ============================================================================
-`
-
-    console.log('🔄 Executing enterprise schema...')
-    await client.query(schema)
+`)
     console.log('✅ Schema executed successfully')
 
     await client.end()
@@ -840,18 +841,22 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 
   } catch (error: any) {
     console.error('❌ Migration error:', error)
-    await client.end().catch(() => {})
+    if (client) {
+      await client.end().catch(() => {})
+    }
     
     return NextResponse.json({
       success: false,
       error: error.message,
-      detail: error.detail || 'No additional details'
+      detail: error.detail || error.hint || 'No additional details',
+      stack: error.stack
     }, { status: 500 })
   }
 }
 
 export async function GET() {
   return NextResponse.json({
-    message: 'POST with token to run enterprise schema migration'
+    message: 'POST with token to run enterprise schema migration',
+    status: 'ready'
   })
 }
