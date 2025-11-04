@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 import { convertLegalToPlain, convertPlainToLegal, extractKeyTerms, generateSummary } from '@/lib/openai'
 import { calculateCreditsUsed } from '@/lib/stripe'
-import { APP_CONFIG } from '@/lib/app-config'
 
 export async function POST(request: NextRequest) {
   try {
