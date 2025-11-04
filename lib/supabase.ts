@@ -17,47 +17,52 @@ export const supabaseAdmin = createClient(
   }
 )
 
+// Database types matching crav-website schema
 export type Database = {
   public: {
     Tables: {
-      users: {
+      profiles: {
         Row: {
           id: string
           email: string
-          name: string | null
-          credits: number
-          plan: 'free' | 'starter' | 'professional' | 'enterprise'
+          full_name: string | null
+          credits_balance: number
+          subscription_tier: 'free' | 'starter' | 'professional' | 'enterprise'
           created_at: string
           updated_at: string
         }
         Insert: {
           id: string
           email: string
-          name?: string | null
-          credits?: number
-          plan?: 'free' | 'starter' | 'professional' | 'enterprise'
+          full_name?: string | null
+          credits_balance?: number
+          subscription_tier?: 'free' | 'starter' | 'professional' | 'enterprise'
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           email?: string
-          name?: string | null
-          credits?: number
-          plan?: 'free' | 'starter' | 'professional' | 'enterprise'
+          full_name?: string | null
+          credits_balance?: number
+          subscription_tier?: 'free' | 'starter' | 'professional' | 'enterprise'
           created_at?: string
           updated_at?: string
         }
       }
-      documents: {
+      legalease_documents: {
         Row: {
           id: string
           user_id: string
           title: string
           original_content: string
           converted_content: string | null
+          conversion_type: 'legal-to-plain' | 'plain-to-legal'
           document_type: 'contract' | 'agreement' | 'terms' | 'policy' | 'other'
           status: 'pending' | 'processing' | 'completed' | 'failed'
+          credits_used: number
+          key_terms: any | null
+          summary: string | null
           file_url: string | null
           created_at: string
           updated_at: string
@@ -68,8 +73,12 @@ export type Database = {
           title: string
           original_content: string
           converted_content?: string | null
+          conversion_type: 'legal-to-plain' | 'plain-to-legal'
           document_type?: 'contract' | 'agreement' | 'terms' | 'policy' | 'other'
           status?: 'pending' | 'processing' | 'completed' | 'failed'
+          credits_used: number
+          key_terms?: any | null
+          summary?: string | null
           file_url?: string | null
           created_at?: string
           updated_at?: string
@@ -80,11 +89,47 @@ export type Database = {
           title?: string
           original_content?: string
           converted_content?: string | null
+          conversion_type?: 'legal-to-plain' | 'plain-to-legal'
           document_type?: 'contract' | 'agreement' | 'terms' | 'policy' | 'other'
           status?: 'pending' | 'processing' | 'completed' | 'failed'
+          credits_used?: number
+          key_terms?: any | null
+          summary?: string | null
           file_url?: string | null
           created_at?: string
           updated_at?: string
+        }
+      }
+      credit_transactions: {
+        Row: {
+          id: string
+          user_id: string
+          amount: number
+          type: 'purchase' | 'usage' | 'refund' | 'bonus'
+          description: string
+          app_name: string | null
+          metadata: Record<string, any> | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          amount: number
+          type: 'purchase' | 'usage' | 'refund' | 'bonus'
+          description: string
+          app_name?: string | null
+          metadata?: Record<string, any> | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          amount?: number
+          type?: 'purchase' | 'usage' | 'refund' | 'bonus'
+          description?: string
+          app_name?: string | null
+          metadata?: Record<string, any> | null
+          created_at?: string
         }
       }
       templates: {
@@ -117,32 +162,6 @@ export type Database = {
           is_active?: boolean
           created_at?: string
           updated_at?: string
-        }
-      }
-      usage_logs: {
-        Row: {
-          id: string
-          user_id: string
-          action: string
-          credits_used: number
-          metadata: Record<string, any> | null
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          user_id: string
-          action: string
-          credits_used: number
-          metadata?: Record<string, any> | null
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          user_id?: string
-          action?: string
-          credits_used?: number
-          metadata?: Record<string, any> | null
-          created_at?: string
         }
       }
       branding: {
