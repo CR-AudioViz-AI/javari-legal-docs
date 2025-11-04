@@ -1,95 +1,179 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 
-// Client for browser (uses anon key)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
-// Admin client for server (uses service role key)
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false
+// Server-side client with service role key
+export const supabaseAdmin = createClient(
+  supabaseUrl,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
   }
-});
+)
 
-// Database types
-export type UserProfile = {
-  id: string;
-  user_id: string;
-  email: string;
-  full_name: string | null;
-  company_name: string | null;
-  role: 'user' | 'admin' | 'enterprise';
-  credits: number;
-  subscription_tier: 'free' | 'professional' | 'enterprise';
-  subscription_status: string;
-  stripe_customer_id: string | null;
-  stripe_subscription_id: string | null;
-  created_at: string;
-  updated_at: string;
-  last_login: string;
-};
-
-export type LegalDocument = {
-  id: string;
-  user_id: string;
-  title: string;
-  original_file: string | null;
-  original_text: string | null;
-  converted_file: string | null;
-  converted_text: string | null;
-  type: 'legal_to_plain' | 'plain_to_legal';
-  status: 'processing' | 'completed' | 'failed';
-  file_type: 'pdf' | 'docx' | 'doc' | 'txt' | null;
-  metadata: Record<string, any>;
-  word_count: number | null;
-  character_count: number | null;
-  credits_used: number;
-  created_at: string;
-  updated_at: string;
-};
-
-export type ConversionSession = {
-  id: string;
-  document_id: string;
-  messages: any[];
-  questions_asked: any[];
-  verification_score: number | null;
-  key_terms: any[];
-  critical_points: any[];
-  created_at: string;
-  updated_at: string;
-};
-
-export type DocumentTemplate = {
-  id: string;
-  user_id: string | null;
-  name: string;
-  category: string;
-  description: string | null;
-  content: string;
-  logo_url: string | null;
-  branding_config: Record<string, any>;
-  legal_clauses: any[];
-  is_public: boolean;
-  usage_count: number;
-  created_at: string;
-  updated_at: string;
-};
-
-export type UsageLog = {
-  id: string;
-  user_id: string;
-  document_id: string | null;
-  action: string;
-  conversion_type: 'legal_to_plain' | 'plain_to_legal' | 'verification' | null;
-  tokens_used: number;
-  cost: number;
-  success: boolean;
-  error_message: string | null;
-  metadata: Record<string, any>;
-  created_at: string;
-};
+export type Database = {
+  public: {
+    Tables: {
+      users: {
+        Row: {
+          id: string
+          email: string
+          name: string | null
+          credits: number
+          plan: 'free' | 'starter' | 'professional' | 'enterprise'
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id: string
+          email: string
+          name?: string | null
+          credits?: number
+          plan?: 'free' | 'starter' | 'professional' | 'enterprise'
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          email?: string
+          name?: string | null
+          credits?: number
+          plan?: 'free' | 'starter' | 'professional' | 'enterprise'
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      documents: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          original_content: string
+          converted_content: string | null
+          document_type: 'contract' | 'agreement' | 'terms' | 'policy' | 'other'
+          status: 'pending' | 'processing' | 'completed' | 'failed'
+          file_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title: string
+          original_content: string
+          converted_content?: string | null
+          document_type?: 'contract' | 'agreement' | 'terms' | 'policy' | 'other'
+          status?: 'pending' | 'processing' | 'completed' | 'failed'
+          file_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          title?: string
+          original_content?: string
+          converted_content?: string | null
+          document_type?: 'contract' | 'agreement' | 'terms' | 'policy' | 'other'
+          status?: 'pending' | 'processing' | 'completed' | 'failed'
+          file_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      templates: {
+        Row: {
+          id: string
+          name: string
+          description: string
+          category: string
+          content: string
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description: string
+          category: string
+          content: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string
+          category?: string
+          content?: string
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
+      usage_logs: {
+        Row: {
+          id: string
+          user_id: string
+          action: string
+          credits_used: number
+          metadata: Record<string, any> | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          action: string
+          credits_used: number
+          metadata?: Record<string, any> | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          action?: string
+          credits_used?: number
+          metadata?: Record<string, any> | null
+          created_at?: string
+        }
+      }
+      branding: {
+        Row: {
+          id: string
+          user_id: string
+          logo_url: string | null
+          primary_color: string
+          secondary_color: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          logo_url?: string | null
+          primary_color?: string
+          secondary_color?: string
+          created_at?: string
+          updated_at?: string
+        }
+      }
+    }
+  }
+}

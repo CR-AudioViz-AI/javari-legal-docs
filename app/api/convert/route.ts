@@ -1,120 +1,100 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { convertLegalToPlain, convertPlainToLegal } from '@/lib/openai';
-import { supabaseAdmin } from '@/lib/supabase';
-import { calculateCost, estimateTokens } from '@/lib/utils';
+import { NextRequest, NextResponse } from 'next/server'
+import { supabaseAdmin } from '@/lib/supabase'
+import { convertLegalToPlain, convertPlainToLegal, extractKeyTerms, generateSummary } from '@/lib/openai'
+import { calculateCreditsUsed } from '@/lib/stripe'
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { documentId, text, type, userId } = await req.json();
+    const { text, conversionType, userId } = await request.json()
 
-    if (!documentId || !text || !type || !userId) {
+    if (!text || !conversionType || !userId) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
-      );
+      )
     }
 
-    // Check user credits
-    const { data: profile, error: profileError } = await supabaseAdmin
-      .from('user_profiles')
+    // Check user's available credits
+    const { data: user, error: userError } = await supabaseAdmin
+      .from('users')
       .select('credits')
-      .eq('user_id', userId)
-      .single();
+      .eq('id', userId)
+      .single()
 
-    if (profileError || !profile) {
+    if (userError || !user) {
       return NextResponse.json(
         { error: 'User not found' },
         { status: 404 }
-      );
+      )
     }
 
-    const estimatedTokens = estimateTokens(text);
-    const creditsNeeded = Math.ceil(estimatedTokens / 1000);
+    // Calculate credits needed
+    const creditsNeeded = calculateCreditsUsed(text.length, conversionType)
 
-    if (profile.credits < creditsNeeded) {
+    if (user.credits < creditsNeeded) {
       return NextResponse.json(
-        { error: 'Insufficient credits' },
+        { error: 'Insufficient credits', creditsNeeded, available: user.credits },
         { status: 402 }
-      );
+      )
     }
 
     // Perform conversion
-    let result;
-    if (type === 'legal_to_plain') {
-      result = await convertLegalToPlain(text);
+    let convertedText: string
+    if (conversionType === 'legal-to-plain') {
+      convertedText = await convertLegalToPlain(text)
+    } else if (conversionType === 'plain-to-legal') {
+      convertedText = await convertPlainToLegal(text)
     } else {
-      result = await convertPlainToLegal(text);
+      return NextResponse.json(
+        { error: 'Invalid conversion type' },
+        { status: 400 }
+      )
     }
 
-    // Update document
-    const { error: updateError } = await supabaseAdmin
-      .from('legal_documents')
-      .update({
-        converted_text: result.convertedText,
-        status: 'completed',
-        credits_used: creditsNeeded,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', documentId);
-
-    if (updateError) {
-      throw updateError;
-    }
-
-    // Create conversion session
-    const { error: sessionError } = await supabaseAdmin
-      .from('conversion_sessions')
-      .insert({
-        document_id: documentId,
-        messages: [
-          { role: 'user', content: text },
-          { role: 'assistant', content: result.convertedText }
-        ],
-        questions_asked: result.questions,
-        key_terms: result.keyTerms,
-        critical_points: result.criticalPoints,
-      });
-
-    if (sessionError) {
-      console.error('Failed to create session:', sessionError);
+    // Extract key terms and generate summary (only for legal-to-plain)
+    let keyTerms = null
+    let summary = null
+    if (conversionType === 'legal-to-plain') {
+      [keyTerms, summary] = await Promise.all([
+        extractKeyTerms(text),
+        generateSummary(text),
+      ])
     }
 
     // Deduct credits
-    const { error: creditError } = await supabaseAdmin
-      .from('user_profiles')
-      .update({ credits: profile.credits - creditsNeeded })
-      .eq('user_id', userId);
+    const { error: updateError } = await supabaseAdmin
+      .from('users')
+      .update({ credits: user.credits - creditsNeeded })
+      .eq('id', userId)
 
-    if (creditError) {
-      console.error('Failed to deduct credits:', creditError);
+    if (updateError) {
+      console.error('Error updating credits:', updateError)
     }
 
     // Log usage
     await supabaseAdmin.from('usage_logs').insert({
       user_id: userId,
-      document_id: documentId,
-      action: 'conversion',
-      conversion_type: type,
-      tokens_used: result.tokensUsed,
-      cost: calculateCost(result.tokensUsed),
-      success: true,
-    });
+      action: `convert_${conversionType}`,
+      credits_used: creditsNeeded,
+      metadata: {
+        text_length: text.length,
+        conversion_type: conversionType,
+      },
+    })
 
     return NextResponse.json({
       success: true,
-      convertedText: result.convertedText,
-      keyTerms: result.keyTerms,
-      criticalPoints: result.criticalPoints,
-      questions: result.questions,
+      convertedText,
+      keyTerms,
+      summary,
       creditsUsed: creditsNeeded,
-      remainingCredits: profile.credits - creditsNeeded,
-    });
-  } catch (error) {
-    console.error('Conversion error:', error);
-    
+      remainingCredits: user.credits - creditsNeeded,
+    })
+  } catch (error: any) {
+    console.error('Conversion error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Conversion failed' },
+      { error: error.message || 'Conversion failed' },
       { status: 500 }
-    );
+    )
   }
 }

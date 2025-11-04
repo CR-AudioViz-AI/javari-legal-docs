@@ -1,6 +1,7 @@
 {
   "name": "legalease-ai",
   "version": "1.0.0",
+  "description": "Legal Document Translation Platform - Convert legal jargon to plain English",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,32 +11,38 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "next": "14.2.13",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "@supabase/supabase-js": "^2.39.7",
-    "stripe": "^14.10.0",
-    "openai": "^4.20.1",
-    "mammoth": "^1.6.0",
-    "pdf-parse": "^1.1.1",
-    "jspdf": "^2.5.1",
-    "docx": "^8.5.0",
-    "lucide-react": "^0.263.1",
-    "recharts": "^2.10.3",
-    "clsx": "^2.0.0",
-    "tailwind-merge": "^2.0.0",
-    "zod": "^3.22.4"
-  },
-  "devDependencies": {
-    "typescript": "^5.3.3",
+    "@radix-ui/react-dialog": "^1.0.5",
+    "@radix-ui/react-dropdown-menu": "^2.0.6",
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-select": "^2.0.0",
+    "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-toast": "^1.1.5",
+    "@supabase/supabase-js": "^2.39.0",
     "@types/node": "^20.10.5",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.18",
-    "@types/pdf-parse": "^1.1.4",
     "autoprefixer": "^10.4.16",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
+    "framer-motion": "^10.16.16",
+    "lucide-react": "^0.302.0",
+    "mammoth": "^1.6.0",
+    "next": "14.0.4",
+    "openai": "^4.20.1",
+    "pdf-parse": "^1.1.1",
     "postcss": "^8.4.32",
-    "tailwindcss": "^3.3.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "stripe": "^14.10.0",
+    "tailwind-merge": "^2.2.0",
+    "tailwindcss": "^3.4.0",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@types/pdf-parse": "^1.1.4",
     "eslint": "^8.56.0",
-    "eslint-config-next": "14.2.13"
+    "eslint-config-next": "14.0.4"
   }
 }

@@ -1,158 +1,181 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { FileText, Upload, Download, ArrowRight, Loader2 } from 'lucide-react';
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { FileText, Upload, ArrowRight, Download } from 'lucide-react'
 
 export default function DashboardPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [conversionType, setConversionType] = useState<'legal_to_plain' | 'plain_to_legal'>('legal_to_plain');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-    }
-  };
+  const [inputText, setInputText] = useState('')
+  const [outputText, setOutputText] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [conversionType, setConversionType] = useState<'legal-to-plain' | 'plain-to-legal'>('legal-to-plain')
 
   const handleConvert = async () => {
-    if (!file) return;
-
-    setLoading(true);
+    if (!inputText.trim()) return
+    
+    setLoading(true)
     try {
-      // This is a placeholder - in production, this would call your API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      setResult({
-        convertedText: 'This is your converted document...',
-        keyTerms: [],
-        criticalPoints: [],
-      });
+      // TODO: Implement API call
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      setOutputText('Conversion result will appear here...')
     } catch (error) {
-      console.error('Conversion error:', error);
+      console.error('Conversion failed:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    const text = await file.text()
+    setInputText(text)
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <FileText className="w-8 h-8 text-blue-600" />
-              <span className="text-2xl font-bold">LegalEase AI</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="text-sm">
-                <span className="text-gray-600">Credits:</span>
-                <span className="ml-2 font-semibold">50</span>
-              </div>
-              <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-                Upgrade
-              </button>
-            </div>
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <FileText className="h-6 w-6 text-blue-600" />
+            <span className="text-xl font-bold">LegalEase AI</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">Credits: <strong>850</strong></span>
+            <Button variant="outline">My Account</Button>
+            <Button variant="ghost">Sign Out</Button>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Document Converter</h1>
-          <p className="text-gray-600">Transform legal documents into plain English and vice versa</p>
+          <h1 className="text-3xl font-bold mb-2">Document Converter</h1>
+          <p className="text-gray-600">
+            Transform legal documents to plain English or create legal documents from plain text
+          </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Upload Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold mb-4">Upload Document</h2>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Conversion Type
-              </label>
-              <select
-                value={conversionType}
-                onChange={(e) => setConversionType(e.target.value as any)}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="legal_to_plain">Legal → Plain English</option>
-                <option value="plain_to_legal">Plain English → Legal</option>
-              </select>
-            </div>
+        {/* Conversion Type Selector */}
+        <div className="flex gap-4 mb-6">
+          <Button
+            variant={conversionType === 'legal-to-plain' ? 'default' : 'outline'}
+            onClick={() => setConversionType('legal-to-plain')}
+          >
+            Legal → Plain English
+          </Button>
+          <Button
+            variant={conversionType === 'plain-to-legal' ? 'default' : 'outline'}
+            onClick={() => setConversionType('plain-to-legal')}
+          >
+            Plain English → Legal
+          </Button>
+        </div>
 
-            <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center mb-4">
-              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 mb-2">Drop your file here or</p>
-              <label className="inline-block bg-blue-600 text-white px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-700">
-                <input
-                  type="file"
-                  accept=".pdf,.docx,.doc,.txt"
-                  onChange={handleFileChange}
-                  className="hidden"
+        {/* Conversion Interface */}
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Input Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Input {conversionType === 'legal-to-plain' ? 'Legal Document' : 'Plain Text'}</CardTitle>
+              <CardDescription>
+                Paste your text below or upload a document
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Input
+                    type="file"
+                    onChange={handleFileUpload}
+                    accept=".pdf,.docx,.txt"
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <label htmlFor="file-upload" className="cursor-pointer">
+                    <Button variant="outline" asChild>
+                      <span>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload File
+                      </span>
+                    </Button>
+                  </label>
+                </div>
+
+                <textarea
+                  className="w-full h-96 p-4 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder={
+                    conversionType === 'legal-to-plain'
+                      ? 'Paste legal document here...'
+                      : 'Paste plain text here...'
+                  }
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
                 />
-                Choose File
-              </label>
-              {file && (
-                <p className="mt-4 text-sm text-gray-600">
-                  Selected: {file.name}
-                </p>
-              )}
-            </div>
 
-            <button
-              onClick={handleConvert}
-              disabled={!file || loading}
-              className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="animate-spin mr-2" />
-                  Converting...
-                </>
-              ) : (
-                <>
-                  Convert Document
-                  <ArrowRight className="ml-2" />
-                </>
-              )}
-            </button>
-          </div>
-
-          {/* Results Section */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold mb-4">Converted Document</h2>
-            
-            {result ? (
-              <div>
-                <div className="bg-gray-50 rounded-lg p-4 mb-4 max-h-96 overflow-y-auto">
-                  <p className="text-gray-800 whitespace-pre-wrap">{result.convertedText}</p>
-                </div>
-                <button className="w-full border-2 border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 flex items-center justify-center">
-                  <Download className="mr-2" />
-                  Download PDF
-                </button>
+                <Button 
+                  className="w-full" 
+                  onClick={handleConvert}
+                  disabled={loading || !inputText.trim()}
+                >
+                  {loading ? 'Converting...' : 'Convert'}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
               </div>
-            ) : (
-              <div className="flex items-center justify-center h-96 text-gray-400">
-                <div className="text-center">
-                  <FileText className="w-16 h-16 mx-auto mb-4" />
-                  <p>Your converted document will appear here</p>
+            </CardContent>
+          </Card>
+
+          {/* Output Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Output {conversionType === 'legal-to-plain' ? 'Plain English' : 'Legal Document'}</CardTitle>
+              <CardDescription>
+                Converted text will appear here
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <Button variant="outline" disabled={!outputText}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </Button>
+                  <Button variant="outline" disabled={!outputText}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Download DOCX
+                  </Button>
+                </div>
+
+                <div className="w-full h-96 p-4 border rounded-lg bg-gray-50 overflow-auto">
+                  {outputText || (
+                    <p className="text-gray-400 text-center mt-20">
+                      Converted text will appear here...
+                    </p>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Recent Documents */}
-        <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold mb-4">Recent Documents</h2>
-          <div className="text-center text-gray-400 py-8">
-            No documents yet. Upload your first document to get started!
-          </div>
-        </div>
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle>Recent Documents</CardTitle>
+            <CardDescription>Your recently converted documents</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-500 text-center py-8">
+              No documents yet. Start by converting your first document above.
+            </p>
+          </CardContent>
+        </Card>
       </div>
     </div>
-  );
+  )
 }

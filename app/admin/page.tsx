@@ -1,76 +1,119 @@
-'use client';
+'use client'
 
-import { FileText, Users, DollarSign, Activity } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Users, FileText, DollarSign, Activity } from 'lucide-react'
 
 export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-            <span className="text-sm text-gray-500">LegalEase AI</span>
-          </div>
+        <div className="container mx-auto px-4 py-4">
+          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-8">
         {/* Stats Grid */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-gray-600">Total Users</p>
-              <Users className="w-5 h-5 text-blue-600" />
-            </div>
-            <p className="text-3xl font-bold">1,234</p>
-            <p className="text-sm text-green-600 mt-2">+12% from last month</p>
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">1,234</div>
+              <p className="text-xs text-muted-foreground">
+                +12% from last month
+              </p>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-gray-600">Documents Converted</p>
-              <FileText className="w-5 h-5 text-green-600" />
-            </div>
-            <p className="text-3xl font-bold">45,678</p>
-            <p className="text-sm text-green-600 mt-2">+8% from last month</p>
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Documents Processed</CardTitle>
+              <FileText className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">45,231</div>
+              <p className="text-xs text-muted-foreground">
+                +23% from last month
+              </p>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-gray-600">Monthly Revenue</p>
-              <DollarSign className="w-5 h-5 text-purple-600" />
-            </div>
-            <p className="text-3xl font-bold">$12,450</p>
-            <p className="text-sm text-green-600 mt-2">+23% from last month</p>
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Revenue</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">$12,345</div>
+              <p className="text-xs text-muted-foreground">
+                +8% from last month
+              </p>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-gray-600">System Health</p>
-              <Activity className="w-5 h-5 text-green-600" />
-            </div>
-            <p className="text-3xl font-bold text-green-600">Healthy</p>
-            <p className="text-sm text-gray-500 mt-2">All systems operational</p>
-          </div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Now</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">89</div>
+              <p className="text-xs text-muted-foreground">
+                Users online
+              </p>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Recent Activity */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center justify-between py-3 border-b last:border-b-0">
-                <div>
-                  <p className="font-medium">Document conversion completed</p>
-                  <p className="text-sm text-gray-500">User: user{i}@example.com</p>
-                </div>
-                <span className="text-sm text-gray-400">2 hours ago</span>
-              </div>
-            ))}
-          </div>
+        <div className="grid md:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Users</CardTitle>
+              <CardDescription>Latest user registrations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500 text-center py-8">
+                User list will appear here
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Conversions</CardTitle>
+              <CardDescription>Latest document conversions</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-500 text-center py-8">
+                Conversion history will appear here
+              </p>
+            </CardContent>
+          </Card>
         </div>
+
+        {/* Actions */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Quick Actions</CardTitle>
+            <CardDescription>Admin management tools</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-4">
+              <Button>Manage Users</Button>
+              <Button variant="outline">View Analytics</Button>
+              <Button variant="outline">System Settings</Button>
+              <Button variant="outline">Export Data</Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
-  );
+  )
 }

@@ -1,26 +1,74 @@
-import Stripe from 'stripe';
+import Stripe from 'stripe'
 
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
-  typescript: true,
-});
+  apiVersion: '2024-10-28.acacia',
+})
 
-export const PRICE_IDS = {
-  PROFESSIONAL: 'price_professional_monthly',
-  ENTERPRISE: 'price_enterprise_monthly',
-  CREDITS_100: 'price_100_credits',
-  CREDITS_500: 'price_500_credits',
-};
+export const PRICING_PLANS = {
+  free: {
+    name: 'Free',
+    price: 0,
+    credits: 100,
+    features: [
+      '100 credits/month',
+      'Basic document conversion',
+      '5 document templates',
+      'Email support',
+    ],
+  },
+  starter: {
+    name: 'Starter',
+    price: 29,
+    priceId: 'price_starter', // You'll need to create this in Stripe Dashboard
+    credits: 1000,
+    features: [
+      '1,000 credits/month',
+      'Unlimited conversions',
+      '15 document templates',
+      'Priority email support',
+      'Export to PDF/DOCX',
+    ],
+  },
+  professional: {
+    name: 'Professional',
+    price: 99,
+    priceId: 'price_professional', // You'll need to create this in Stripe Dashboard
+    credits: 5000,
+    features: [
+      '5,000 credits/month',
+      'Unlimited conversions',
+      'All 15+ templates',
+      '24/7 priority support',
+      'Custom branding',
+      'API access',
+      'Bulk processing',
+    ],
+  },
+  enterprise: {
+    name: 'Enterprise',
+    price: 299,
+    priceId: 'price_enterprise', // You'll need to create this in Stripe Dashboard
+    credits: 20000,
+    features: [
+      '20,000 credits/month',
+      'Unlimited conversions',
+      'All templates + custom',
+      'Dedicated account manager',
+      'White-label options',
+      'Full API access',
+      'Advanced analytics',
+      'SLA guarantee',
+    ],
+  },
+} as const
 
 export async function createCheckoutSession(
+  userId: string,
   priceId: string,
-  customerId: string | null,
-  customerEmail: string,
-  successUrl: string,
-  cancelUrl: string
+  planName: string
 ): Promise<Stripe.Checkout.Session> {
-  const sessionParams: Stripe.Checkout.SessionCreateParams = {
-    mode: priceId.includes('monthly') ? 'subscription' : 'payment',
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
     payment_method_types: ['card'],
     line_items: [
       {
@@ -28,89 +76,48 @@ export async function createCheckoutSession(
         quantity: 1,
       },
     ],
-    success_url: successUrl,
-    cancel_url: cancelUrl,
-    customer_email: customerId ? undefined : customerEmail,
-    ...(customerId && { customer: customerId }),
-  };
+    success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?canceled=true`,
+    client_reference_id: userId,
+    metadata: {
+      userId,
+      planName,
+    },
+  })
 
-  return await stripe.checkout.sessions.create(sessionParams);
+  return session
 }
 
-export async function createCustomer(email: string, name?: string): Promise<Stripe.Customer> {
-  return await stripe.customers.create({
-    email,
-    ...(name && { name }),
-  });
-}
-
-export async function getCustomer(customerId: string): Promise<Stripe.Customer> {
-  return await stripe.customers.retrieve(customerId) as Stripe.Customer;
-}
-
-export async function createSubscription(
-  customerId: string,
-  priceId: string
-): Promise<Stripe.Subscription> {
-  return await stripe.subscriptions.create({
+export async function createPortalSession(
+  customerId: string
+): Promise<Stripe.BillingPortal.Session> {
+  const session = await stripe.billingPortal.sessions.create({
     customer: customerId,
-    items: [{ price: priceId }],
-    payment_behavior: 'default_incomplete',
-    payment_settings: { save_default_payment_method: 'on_subscription' },
-    expand: ['latest_invoice.payment_intent'],
-  });
+    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+  })
+
+  return session
 }
 
-export async function cancelSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
-  return await stripe.subscriptions.cancel(subscriptionId);
+export async function addCreditsToUser(
+  userId: string,
+  credits: number
+): Promise<void> {
+  // This will be implemented with Supabase in the webhook handler
+  // Just a placeholder for the function signature
+  console.log(`Adding ${credits} credits to user ${userId}`)
 }
 
-export async function updateSubscription(
-  subscriptionId: string,
-  priceId: string
-): Promise<Stripe.Subscription> {
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+export function calculateCreditsUsed(
+  documentLength: number,
+  conversionType: 'legal-to-plain' | 'plain-to-legal'
+): number {
+  // Base credit cost
+  const baseCredits = 10
   
-  return await stripe.subscriptions.update(subscriptionId, {
-    items: [
-      {
-        id: subscription.items.data[0].id,
-        price: priceId,
-      },
-    ],
-    proration_behavior: 'create_prorations',
-  });
-}
-
-export async function getSubscription(subscriptionId: string): Promise<Stripe.Subscription> {
-  return await stripe.subscriptions.retrieve(subscriptionId);
-}
-
-export async function constructWebhookEvent(
-  payload: string | Buffer,
-  signature: string
-): Promise<Stripe.Event> {
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-  return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-}
-
-export function getCreditAmount(priceId: string): number {
-  switch (priceId) {
-    case PRICE_IDS.PROFESSIONAL:
-      return 500;
-    case PRICE_IDS.ENTERPRISE:
-      return 2000;
-    case PRICE_IDS.CREDITS_100:
-      return 100;
-    case PRICE_IDS.CREDITS_500:
-      return 500;
-    default:
-      return 0;
-  }
-}
-
-export function getSubscriptionTier(priceId: string): 'free' | 'professional' | 'enterprise' {
-  if (priceId === PRICE_IDS.PROFESSIONAL) return 'professional';
-  if (priceId === PRICE_IDS.ENTERPRISE) return 'enterprise';
-  return 'free';
+  // Additional credits per 1000 characters
+  const lengthCredits = Math.ceil(documentLength / 1000) * 5
+  
+  // Total credits
+  return baseCredits + lengthCredits
 }
