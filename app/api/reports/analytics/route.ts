@@ -78,16 +78,19 @@ export async function GET(request: NextRequest) {
       .eq('organization_id', organization_id)
 
     // Get pending approvals
+    // First get document IDs for this organization
+    const { data: orgDocs } = await supabase
+      .from('legalease_documents')
+      .select('id')
+      .eq('organization_id', organization_id)
+    
+    const docIds = orgDocs?.map(d => d.id) || []
+    
     const { count: pendingApprovals } = await supabase
       .from('document_approvals')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'pending')
-      .in('document_id', 
-        supabase
-          .from('legalease_documents')
-          .select('id')
-          .eq('organization_id', organization_id)
-      )
+      .in('document_id', docIds)
 
     // Get archived documents
     const { count: archivedDocuments } = await supabase
