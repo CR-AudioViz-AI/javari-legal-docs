@@ -1,119 +1,58 @@
-'use client'
+import AdminDashboardLayout from '@/components/admin/AdminDashboardLayout'
+import { BarChart3, Building2, Users, FileText, CheckCircle } from 'lucide-react'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Users, FileText, DollarSign, Activity } from 'lucide-react'
+export default function AdminOverview() {
+  const stats = [
+    { name: 'Organizations', value: '12', icon: Building2, color: 'bg-blue-100 text-blue-600' },
+    { name: 'Teams', value: '48', icon: Users, color: 'bg-green-100 text-green-600' },
+    { name: 'Documents', value: '1,234', icon: FileText, color: 'bg-purple-100 text-purple-600' },
+    { name: 'Approvals', value: '23', icon: CheckCircle, color: 'bg-yellow-100 text-yellow-600' },
+  ]
 
-export default function AdminPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        {/* Stats Grid */}
-        <div className="grid md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1,234</div>
-              <p className="text-xs text-muted-foreground">
-                +12% from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Documents Processed</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">45,231</div>
-              <p className="text-xs text-muted-foreground">
-                +23% from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$12,345</div>
-              <p className="text-xs text-muted-foreground">
-                +8% from last month
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Now</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">89</div>
-              <p className="text-xs text-muted-foreground">
-                Users online
-              </p>
-            </CardContent>
-          </Card>
+    <AdminDashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Admin Overview</h1>
+          <p className="text-gray-600 mt-1">System-wide statistics and metrics</p>
         </div>
 
-        {/* Recent Activity */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Users</CardTitle>
-              <CardDescription>Latest user registrations</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500 text-center py-8">
-                User list will appear here
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Conversions</CardTitle>
-              <CardDescription>Latest document conversions</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500 text-center py-8">
-                Conversion history will appear here
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {stats.map((stat) => {
+            const Icon = stat.icon
+            return (
+              <div key={stat.name} className="bg-white rounded-lg border border-gray-200 p-6">
+                <div className={`p-3 rounded-lg inline-block ${stat.color} mb-4`}>
+                  <Icon size={24} />
+                </div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-1">{stat.value}</h3>
+                <p className="text-sm text-gray-600">{stat.name}</p>
+              </div>
+            )
+          })}
         </div>
 
-        {/* Actions */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Admin management tools</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-4">
-              <Button>Manage Users</Button>
-              <Button variant="outline">View Analytics</Button>
-              <Button variant="outline">System Settings</Button>
-              <Button variant="outline">Export Data</Button>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button className="p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all">
+              <Building2 className="text-blue-600 mb-2" size={24} />
+              <h3 className="font-semibold text-gray-900">New Organization</h3>
+              <p className="text-sm text-gray-600 mt-1">Create a new organization</p>
+            </button>
+            <button className="p-4 text-left border-2 border-gray-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all">
+              <Users className="text-green-600 mb-2" size={24} />
+              <h3 className="font-semibold text-gray-900">New Team</h3>
+              <p className="text-sm text-gray-600 mt-1">Create a new team</p>
+            </button>
+            <button className="p-4 text-left border-2 border-gray-200 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-all">
+              <BarChart3 className="text-purple-600 mb-2" size={24} />
+              <h3 className="font-semibold text-gray-900">View Analytics</h3>
+              <p className="text-sm text-gray-600 mt-1">See detailed reports</p>
+            </button>
+          </div>
+        </div>
       </div>
-    </div>
+    </AdminDashboardLayout>
   )
 }
