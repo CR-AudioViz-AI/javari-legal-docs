@@ -1,129 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase'
-import { convertLegalToPlain, convertPlainToLegal, extractKeyTerms, generateSummary } from '@/lib/openai'
-import { calculateCreditsUsed } from '@/lib/stripe'
+import { createClient } from '@supabase/supabase-js'
+import { deductCredits } from '@/lib/credits'
+import mammoth from 'mammoth'
+import { OpenAI } from 'openai'
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+const CREDIT_COSTS = {
+  small: 5,   // < 1000 words
+  medium: 10, // 1000-5000 words
+  large: 20   // > 5000 words
+}
 
 export async function POST(request: NextRequest) {
   try {
-    const { text, conversionType, userId, skipCreditCheck } = await request.json()
-
-    if (!text || !conversionType || !userId) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Calculate credits needed
-    const creditsNeeded = calculateCreditsUsed(text.length, conversionType)
+    const formData = await request.formData()
+    const file = formData.get('file') as File
+    const targetLanguage = formData.get('language') as string || 'plain'
 
-    // In embedded mode with skipCreditCheck=true, parent already handled credits
-    // In standalone mode, we need to check and deduct credits here
-    if (!skipCreditCheck) {
-      // Check user's available credits
-      const { data: user, error: userError } = await supabaseAdmin
-        .from('profiles')
-        .select('credits_balance')
-        .eq('id', userId)
-        .single()
-
-      if (userError || !user) {
-        return NextResponse.json(
-          { error: 'User not found' },
-          { status: 404 }
-        )
-      }
-
-      if (user.credits_balance < creditsNeeded) {
-        return NextResponse.json(
-          { error: 'Insufficient credits', creditsNeeded, available: user.credits_balance },
-          { status: 402 }
-        )
-      }
-
-      // Deduct credits
-      const { error: updateError } = await supabaseAdmin
-        .from('profiles')
-        .update({ credits_balance: user.credits_balance - creditsNeeded })
-        .eq('id', userId)
-
-      if (updateError) {
-        console.error('Error updating credits:', updateError)
-        return NextResponse.json(
-          { error: 'Failed to update credits' },
-          { status: 500 }
-        )
-      }
-
-      // Log transaction
-      await supabaseAdmin.from('credit_transactions').insert({
-        user_id: userId,
-        amount: -creditsNeeded,
-        type: 'debit',
-        description: `LegalEase: ${conversionType} conversion (${text.length} chars)`,
-        reference_id: null,
-        status: 'completed',
-      })
+    if (!file) {
+      return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    // Perform conversion
-    let convertedText: string
-    if (conversionType === 'legal-to-plain') {
-      convertedText = await convertLegalToPlain(text)
-    } else if (conversionType === 'plain-to-legal') {
-      convertedText = await convertPlainToLegal(text)
-    } else {
-      return NextResponse.json(
-        { error: 'Invalid conversion type' },
-        { status: 400 }
-      )
+    // Extract text
+    const buffer = Buffer.from(await file.arrayBuffer())
+    const result = await mammoth.extractRawText({ buffer })
+    const originalText = result.value
+
+    // Calculate cost
+    const wordCount = originalText.split(/\s+/).length
+    let cost = CREDIT_COSTS.small
+    if (wordCount > 5000) cost = CREDIT_COSTS.large
+    else if (wordCount > 1000) cost = CREDIT_COSTS.medium
+
+    // Deduct credits FIRST
+    const creditResult = await deductCredits(
+      user.id,
+      cost,
+      `Document conversion: ${file.name}`,
+      undefined,
+      'conversion'
+    )
+
+    if (!creditResult.success) {
+      return NextResponse.json({
+        error: creditResult.error || 'Insufficient credits',
+        creditsNeeded: cost,
+        currentBalance: creditResult.newBalance
+      }, { status: 402 })
     }
 
-    // Extract key terms and generate summary (only for legal-to-plain)
-    let keyTerms = null
-    let summary = null
-    if (conversionType === 'legal-to-plain') {
-      try {
-        [keyTerms, summary] = await Promise.all([
-          extractKeyTerms(text),
-          generateSummary(text),
-        ])
-      } catch (error) {
-        console.error('Error extracting terms or summary:', error)
-        // Continue without key terms/summary rather than failing
-      }
-    }
+    // Convert document
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [{
+        role: 'user',
+        content: `Convert this legal document to ${targetLanguage} language:\n\n${originalText}`
+      }]
+    })
 
-    // Save document to database (optional - for history)
-    try {
-      await supabaseAdmin.from('legalease_documents').insert({
-        user_id: userId,
-        title: `Conversion ${new Date().toISOString().slice(0, 10)}`,
-        original_content: text.substring(0, 10000), // Limit to prevent huge entries
-        converted_content: convertedText.substring(0, 10000),
-        conversion_type: conversionType as 'legal-to-plain' | 'plain-to-legal',
-        key_terms: keyTerms,
-        summary: summary,
-        credits_used: creditsNeeded,
-        status: 'completed',
-      })
-    } catch (error) {
-      console.error('Error saving document:', error)
-      // Don't fail the request if document save fails
-    }
+    const convertedText = completion.choices[0]?.message?.content || originalText
 
     return NextResponse.json({
       success: true,
+      originalText,
       convertedText,
-      keyTerms,
-      summary,
-      creditsUsed: creditsNeeded,
+      cost,
+      newBalance: creditResult.newBalance,
+      wordCount
     })
+
   } catch (error: any) {
-    console.error('Conversion error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Conversion failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error.message }, { status: 500 })
   }
 }
