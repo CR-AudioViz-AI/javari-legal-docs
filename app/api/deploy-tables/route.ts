@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export async function POST(request: Request) {
   try {
@@ -24,7 +25,7 @@ export async function POST(request: Request) {
       
       if (docsCheck !== null) tables.push('legalease_documents')
       if (transCheck !== null) tables.push('translations')
-    } catch (e) {
+    } catch (e: unknown) {
       // Tables don't exist, we'll create them via migration
     }
 
