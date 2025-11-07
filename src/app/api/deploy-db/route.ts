@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
 
       try {
         await supabase.rpc('exec', { sql: statement + ';' })
-      } catch (err) {
+      } catch (err: unknown) {
         // Try direct execution if rpc fails
         console.log(`Statement ${i+1} via RPC failed, trying alternative...`)
       }
@@ -52,7 +53,7 @@ export async function POST(request: Request) {
       .eq('table_schema', 'public')
 
     if (error) {
-      console.error('Verification error:', error)
+      logError(\'Verification error:\', error)
     }
 
     return NextResponse.json({
@@ -63,7 +64,7 @@ export async function POST(request: Request) {
     })
 
   } catch (error: any) {
-    console.error('Deployment error:', error)
+    logError(\'Deployment error:\', error)
     return NextResponse.json(
       { error: error.message },
       { status: 500 }
