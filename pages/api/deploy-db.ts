@@ -1,4 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
+import { getErrorMessage, logError, formatApiError } from '@/lib/utils/error-utils';
 
 export default async function handler(
   req: NextApiRequest,
@@ -49,7 +50,7 @@ export default async function handler(
           body: JSON.stringify({ query: statement })
         })
         if (response.ok) executed++
-      } catch (e) {
+      } catch (e: unknown) {
         console.log('Statement execution attempt:', e)
       }
     }
@@ -63,7 +64,7 @@ export default async function handler(
     })
 
   } catch (error: any) {
-    console.error('Deployment error:', error)
+    logError(\'Deployment error:\', error)
     return res.status(500).json({
       error: error.message,
       details: 'Check Vercel logs for full error'
