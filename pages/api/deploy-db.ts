@@ -64,7 +64,7 @@ export default async function handler(
     })
 
   } catch (error: any) {
-    logError(\'Deployment error:\', error)
+    logError('Deployment error:', error)
     return res.status(500).json({
       error: error.message,
       details: 'Check Vercel logs for full error'
