@@ -44,7 +44,7 @@
   "devDependencies": {
     "@types/pdf-parse": "^1.1.4",
     "eslint": "^8.56.0",
-    "eslint-config-next": "14.0.4",
+    "eslint-config-next": "16.2.1",
     "@types/pg": "^8.10.9"
   }
 }
