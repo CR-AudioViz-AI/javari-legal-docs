@@ -1,189 +1,38 @@
+// app/page.tsx — Javari LegalEase
+// CR AudioViz AI · EIN 39-3646201 · May 2026
 'use client'
-
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import Link from 'next/link'
-import { FileText, Zap, Shield, DollarSign, ArrowRight, CheckCircle, Users, Clock } from 'lucide-react'
-
-export default function LandingPage() {
+import { useState, useRef } from 'react'
+const getFeatures = () => [
+  { e: '⚡', t: 'AI-Powered', d: 'Built on Javari AI — smart, fast, accurate' },
+  { e: '🔐', t: 'Your Data', d: 'Everything you create belongs to you. No lock-in.' },
+  { e: '💳', t: '50 Free Credits', d: 'Start free. Credits never expire.' },
+  { e: '🔗', t: 'One Platform', d: 'One account. 150+ Javari apps.' },
+]
+export default function Page() {
+  const features = getFeatures()
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
-      {/* Header */}
-      <header className="container mx-auto px-4 py-6 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <FileText className="h-8 w-8 text-blue-600" />
-          <span className="text-2xl font-bold">LegalEase AI</span>
-        </div>
-        <div className="flex gap-4">
-          <Link href="/dashboard">
-            <Button variant="ghost">Dashboard</Button>
-          </Link>
-          <Link href="/embedded">
-            <Button>Get Started</Button>
-          </Link>
-        </div>
-      </header>
-
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-          Transform Legal Documents<br />Into Plain English
-        </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          AI-powered legal document translation that makes complex contracts and agreements easy to understand for everyone.
-        </p>
-        <div className="flex gap-4 justify-center">
-          <Link href="/embedded">
-            <Button size="lg" className="text-lg px-8">
-              Try It Free <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-          <Link href="/dashboard">
-            <Button size="lg" variant="outline" className="text-lg px-8">
-              View Dashboard
-            </Button>
-          </Link>
+    <div style={{ minHeight: '100vh', background: '#0a0a0f', color: '#e2e8f0', fontFamily: 'system-ui,sans-serif' }}>
+      <div style={{ height: 60 }} />
+      <section style={{ textAlign: 'center', padding: '64px 24px 40px', maxWidth: 700, margin: '0 auto' }}>
+        <div style={{ fontSize: 56, marginBottom: 16 }}>⚖️</div>
+        <h1 style={{ fontSize: 'clamp(28px,4vw,44px)', fontWeight: 800, margin: '0 0 16px', color: '#6366f1' }}>Javari LegalEase</h1>
+        <p style={{ fontSize: 18, color: '#9ca3af', maxWidth: 520, margin: '0 auto 32px', lineHeight: 1.65 }}>AI legal document assistant — contracts, NDAs, compliance guides.</p>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <a href="https://craudiovizai.com/auth/signup" style={{ background: '#6366f1', color: '#fff', borderRadius: 10, padding: '13px 28px', fontSize: 15, fontWeight: 700, textDecoration: 'none' }}>Start Free →</a>
+          <a href="https://craudiovizai.com" style={{ background: 'rgba(255,255,255,0.06)', color: '#e2e8f0', borderRadius: 10, padding: '13px 28px', fontSize: 15, fontWeight: 600, textDecoration: 'none' }}>View Platform</a>
         </div>
       </section>
-
-      {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-12">Why Choose LegalEase AI?</h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
-            <CardHeader>
-              <Zap className="h-10 w-10 text-blue-600 mb-2" />
-              <CardTitle>Instant Translation</CardTitle>
-              <CardDescription>
-                Convert legal jargon to plain English in seconds using advanced AI
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Shield className="h-10 w-10 text-green-600 mb-2" />
-              <CardTitle>Secure & Private</CardTitle>
-              <CardDescription>
-                Your documents are encrypted and never stored permanently
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <DollarSign className="h-10 w-10 text-purple-600 mb-2" />
-              <CardTitle>Affordable Pricing</CardTitle>
-              <CardDescription>
-                Pay only for what you use with our credit-based system
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Clock className="h-10 w-10 text-orange-600 mb-2" />
-              <CardTitle>Save Time</CardTitle>
-              <CardDescription>
-                No more hours spent deciphering legal documents
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
+      <section style={{ maxWidth: 800, margin: '0 auto', padding: '0 20px 60px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))', gap: 16 }}>
+        {features.map(f => (
+          <div key={f.t} style={{ background: '#111118', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 14, padding: '20px 16px' }}>
+            <div style={{ fontSize: 28, marginBottom: 8 }}>{f.e}</div>
+            <div style={{ fontWeight: 700, fontSize: 14, color: '#e2e8f0', marginBottom: 4 }}>{f.t}</div>
+            <div style={{ fontSize: 13, color: '#6b7280', lineHeight: 1.5 }}>{f.d}</div>
+          </div>
+        ))}
       </section>
-
-      {/* How It Works */}
-      <section className="container mx-auto px-4 py-16 bg-gray-50 rounded-lg my-8">
-        <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-          <div className="text-center">
-            <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-              1
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Upload Document</h3>
-            <p className="text-gray-600">
-              Paste or upload your legal document text
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-              2
-            </div>
-            <h3 className="text-xl font-semibold mb-2">AI Processing</h3>
-            <p className="text-gray-600">
-              Our AI analyzes and translates the content
-            </p>
-          </div>
-          <div className="text-center">
-            <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4 text-xl font-bold">
-              3
-            </div>
-            <h3 className="text-xl font-semibold mb-2">Get Results</h3>
-            <p className="text-gray-600">
-              Receive plain English translation instantly
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* Features List */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">Everything You Need</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {[
-              'Convert legal to plain English',
-              'Convert plain English to legal',
-              'Extract key terms and obligations',
-              'Generate executive summaries',
-              'Identify important deadlines',
-              'Highlight payment terms',
-              'Spot penalties and consequences',
-              'Save conversion history'
-            ].map((feature, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <CheckCircle className="h-6 w-6 text-green-600 flex-shrink-0 mt-1" />
-                <span className="text-lg">{feature}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="container mx-auto px-4 py-16 text-center">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-12 text-white">
-          <h2 className="text-4xl font-bold mb-4">Ready to Simplify Legal Documents?</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Start converting legal documents to plain English today
-          </p>
-          <Link href="/embedded">
-            <Button size="lg" variant="secondary" className="text-lg px-8">
-              Get Started Free <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="container mx-auto px-4 py-8 border-t mt-16">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-2">
-            <FileText className="h-6 w-6 text-blue-600" />
-            <span className="font-semibold">LegalEase AI</span>
-          </div>
-          <p className="text-gray-600 text-sm">
-            Part of CR AudioViz AI ecosystem • Making legal documents accessible to everyone
-          </p>
-          <div className="flex gap-4">
-            <Link href="/dashboard" className="text-sm text-gray-600 hover:text-gray-900">
-              Dashboard
-            </Link>
-            <Link href="/embedded" className="text-sm text-gray-600 hover:text-gray-900">
-              Try Demo
-            </Link>
-          </div>
-        </div>
+      <footer style={{ background: '#050609', borderTop: '1px solid rgba(255,255,255,0.04)', padding: '20px', textAlign: 'center' }}>
+        <p style={{ color: '#374151', fontSize: 11, margin: 0 }}>© 2026 CR AudioViz AI, LLC — EIN: 39-3646201 · <a href="https://craudiovizai.com/auth/signup" style={{ color: '#6366f1', textDecoration: 'none' }}>Sign Up Free</a></p>
       </footer>
     </div>
   )
