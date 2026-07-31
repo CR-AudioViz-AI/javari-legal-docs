@@ -1,39 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
-
-export async function POST(request: NextRequest) {
-  try {
-    const { email, password } = await request.json()
-
-    if (!email || !password) {
-      return NextResponse.json(
-        { error: 'Email and password required' },
-        { status: 400 }
-      )
-    }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    if (error) {
-      return NextResponse.json(
-        { error: error.message },
-        { status: 401 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      user: data.user,
-      session: data.session,
-    })
-  } catch (error: any) {
-    console.error('Signin error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Signin failed' },
-      { status: 500 }
-    )
-  }
+// app/api/auth/signin/route.ts
+// Disabled 2026-07-30: a local, duplicate auth system, unused by anything in
+// this codebase and confirmed unreachable (no page ever called it). Per Roy:
+// every app ties into the one shared platform identity or it doesn't ship its
+// own. Real sign-in now lives at /login, which redirects to core auth.
+import { NextResponse } from 'next/server'
+export async function POST() {
+  return NextResponse.json({ error: 'Use central platform authentication - see /login' }, { status: 410 })
 }
