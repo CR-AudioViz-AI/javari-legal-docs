@@ -8,8 +8,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+// Fixed 2026-07-31: revalidate=3600 meant state bar / dictionary data could
+// be served stale for up to an hour after a real database update - removed
+// in favor of always querying live, matching every other route.
 export const dynamic = "force-dynamic";
-export const revalidate = 3600;
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const SB_SVC = process.env.SUPABASE_SERVICE_ROLE_KEY ?? "";

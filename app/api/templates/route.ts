@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase'
 
+// Fixed 2026-07-31: this route had no dynamic export, so Next.js statically
+// cached its response at build time - it was serving the 18-template
+// snapshot from the original build forever, never re-querying the database
+// as templates were added. force-dynamic ensures every request queries live.
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const { data: templates, error } = await supabaseAdmin
