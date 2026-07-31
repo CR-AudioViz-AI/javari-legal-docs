@@ -75,6 +75,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     filledSkeleton = filledSkeleton.split(`{{${k}}}`).join(v);
   }
 
+  // Real records-capacity check, before spending any credits - never charge
+  // a customer only to discover they're out of room to save what they paid
+  // for. Uses the central /api/records endpoint (aggregate across every app,
+  // per Roy's explicit direction), the first real consumer of the
+  // enforcement built 2026-07-31.
+  const recordCheckRes = await fetch("https://craudiovizai.com/api/records?add=1", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const recordCheck = await recordCheckRes.json();
+  if (recordCheckRes.ok && !recordCheck.allowed) {
+    return NextResponse.json({
+      error: recordCheck.message ?? "Record limit reached",
+      upgrade_url: recordCheck.upgrade_url,
+    }, { status: 402 });
+  }
+
   // Spend against the real, shared platform credit balance - same central
   // endpoint every other document-generating feature on the platform uses.
   const spendRes = await fetch("https://craudiovizai.com/api/credits/spend", {
@@ -111,6 +127,17 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     metadata: { template_slug: template.slug, fields, disclaimer: DISCLAIMER, cost: CREDIT_COST },
   }).select("id").single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // Register the real record increment - fire-and-forget is deliberate here:
+  // the document already exists and was already paid for, so a transient
+  // failure to update the usage ledger should never block the customer from
+  // getting what they just paid for. A missed increment is a minor,
+  // correctable drift; a blocked delivery after payment is a real problem.
+  fetch("https://craudiovizai.com/api/records", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ kind: "legal_document", delta: 1 }),
+  }).catch(() => { /* logged server-side on the central route; not fatal here */ });
 
   // Save into the platform's unified customer asset folder - the same
   // user_assets table every other app writes to - so this document shows up
