@@ -112,6 +112,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }).select("id").single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
+  // Save into the platform's unified customer asset folder - the same
+  // user_assets table every other app writes to - so this document shows up
+  // in the customer's assets alongside everything else they own, not siloed
+  // inside this one app.
+  await sb.from("user_assets").insert({
+    user_id: user.id,
+    app_id: "javari-legal-docs",
+    type: "document",
+    asset_type: "legal_document",
+    name: template.name,
+    file_name: `${template.name}.txt`,
+    url: `https://javarilegal.com/api/documents/${doc.id}/download?format=txt`,
+    file_url: `https://javarilegal.com/api/documents/${doc.id}/download?format=txt`,
+    mime_type: "text/plain",
+    metadata: { document_id: doc.id, template_slug: template.slug, disclaimer: DISCLAIMER },
+  });
+
   return NextResponse.json({
     success: true,
     document_id: doc.id,

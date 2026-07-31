@@ -23,6 +23,7 @@ export default function DashboardPage() {
   const [balance, setBalance] = useState<number | null>(null)
   const [lastCost, setLastCost] = useState<number | null>(null)
   const [acknowledged, setAcknowledged] = useState(false)
+  const [documentId, setDocumentId] = useState<string | null>(null)
 
   const loadBalance = useCallback(async () => {
     try {
@@ -57,6 +58,7 @@ export default function DashboardPage() {
       setOutputText(data.convertedText)
       setLastCost(data.cost)
       setBalance(data.newBalance)
+      setDocumentId(data.document_id ?? null)
     } catch {
       setError('Could not reach the conversion service. Please try again.')
     } finally {
@@ -71,20 +73,24 @@ export default function DashboardPage() {
     setInputText('') // the file itself is sent to the API, not its raw text
   }
 
-  const downloadOutput = (format: 'txt' | 'docx') => {
-    // Real DOCX generation is a larger addition (needs a docx-writing library
-    // server-side) - honest plain-text download now, DOCX export queued
-    // rather than a Download button that silently does nothing.
-    if (format === 'docx') {
-      setError('DOCX export is not built yet — use the text download for now.')
+  const downloadOutput = async (format: 'txt' | 'docx' | 'pdf') => {
+    if (!documentId) {
+      setError('Convert a document first, then you can download it in any format.')
       return
     }
-    const blob = new Blob([outputText], { type: 'text/plain' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url; a.download = 'converted-document.txt'
-    a.click()
-    URL.revokeObjectURL(url)
+    try {
+      const headers = await authHeader()
+      const res = await fetch(`/api/documents/${documentId}/download?format=${format}`, { headers })
+      if (!res.ok) { setError('Could not generate that file — please try again.'); return }
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url; a.download = `document.${format}`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      setError('Could not generate that file — please try again.')
+    }
   }
 
   return (
@@ -207,10 +213,13 @@ export default function DashboardPage() {
               <div className="space-y-4">
                 <div className="flex gap-2">
                   <Button variant="outline" disabled={!outputText} onClick={() => downloadOutput('txt')}>
-                    <Download className="h-4 w-4 mr-2" />Download Text
+                    <Download className="h-4 w-4 mr-2" />Text
                   </Button>
                   <Button variant="outline" disabled={!outputText} onClick={() => downloadOutput('docx')}>
-                    <Download className="h-4 w-4 mr-2" />Download DOCX
+                    <Download className="h-4 w-4 mr-2" />DOCX
+                  </Button>
+                  <Button variant="outline" disabled={!outputText} onClick={() => downloadOutput('pdf')}>
+                    <Download className="h-4 w-4 mr-2" />PDF
                   </Button>
                 </div>
 
