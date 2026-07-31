@@ -22,6 +22,7 @@ export default function DashboardPage() {
   const [conversionType, setConversionType] = useState<'legal-to-plain' | 'plain-to-legal'>('legal-to-plain')
   const [balance, setBalance] = useState<number | null>(null)
   const [lastCost, setLastCost] = useState<number | null>(null)
+  const [acknowledged, setAcknowledged] = useState(false)
 
   const loadBalance = useCallback(async () => {
     try {
@@ -44,6 +45,7 @@ export default function DashboardPage() {
       if (uploadedFile) body.append('file', uploadedFile)
       else body.append('text', inputText)
       body.append('direction', conversionType)
+      body.append('acknowledged_disclaimer', String(acknowledged))
 
       const res = await fetch('/api/convert', { method: 'POST', headers, body })
       const data = await res.json()
@@ -104,6 +106,14 @@ export default function DashboardPage() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* Structural, not a footnote - shown above the tool every time, and
+            the checkbox below is what actually gates the Convert button. */}
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-sm text-red-800">
+          <strong>Not legal advice.</strong> CR AudioViz AI is not a law firm. Every conversion is
+          AI-generated from your own text and is a starting point only — have a licensed attorney
+          review anything before you sign it, rely on it, or act on it.
+        </div>
+
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Document Converter</h1>
           <p className="text-gray-600">
@@ -170,8 +180,15 @@ export default function DashboardPage() {
                   onChange={(e) => setInputText(e.target.value)}
                 />
 
+                <label className="flex items-start gap-2 text-sm text-gray-600 cursor-pointer">
+                  <input type="checkbox" className="mt-0.5" checked={acknowledged}
+                    onChange={(e) => setAcknowledged(e.target.checked)} />
+                  I understand this is not legal advice and I will have a licensed attorney
+                  review this document before relying on it.
+                </label>
+
                 <Button className="w-full" onClick={handleConvert}
-                  disabled={loading || (!inputText.trim() && !uploadedFile)}>
+                  disabled={loading || !acknowledged || (!inputText.trim() && !uploadedFile)}>
                   {loading ? 'Converting…' : 'Convert'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
