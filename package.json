@@ -27,7 +27,7 @@
     "@radix-ui/react-toast": "^1.2.23",
     "@radix-ui/react-switch": "^1.0.3",
     "@supabase/supabase-js": "^2.39.0",
-    "@supabase/ssr": "^0.1.0",
+    "@supabase/ssr": "^0.12.4",
     "openai": "^4.28.0",
     "pdf-lib": "^1.17.1",
     "html2canvas": "^1.4.1",
