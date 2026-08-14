@@ -48,8 +48,8 @@ A professional SaaS platform for legal document translation powered by AI. Built
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/roy-henderson/crav-legalease.git
-cd crav-legalease
+git clone https://github.com/roy-henderson/javari-legalease.git
+cd javari-legalease
 ```
 
 ### 2. Install Dependencies

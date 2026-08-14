@@ -1,6 +1,6 @@
-# EXACT CODE FOR CRAV-WEBSITE
+# EXACT CODE FOR javari-WEBSITE
 
-Copy and paste these exact code snippets into your crav-website repo.
+Copy and paste these exact code snippets into your javari-website repo.
 
 ---
 
@@ -66,7 +66,7 @@ export default function LegalEaseApp() {
 
       const handleMessage = async (event: MessageEvent) => {
         // Verify origin in production
-        const legalEaseUrl = process.env.NEXT_PUBLIC_LEGALEASE_URL || 'https://crav-legalease.vercel.app'
+        const legalEaseUrl = process.env.NEXT_PUBLIC_LEGALEASE_URL || 'https://craudiovizai.com/apps/legalease'
         
         if (process.env.NODE_ENV === 'production' && event.origin !== legalEaseUrl) {
           console.warn('Rejected message from:', event.origin)
@@ -170,7 +170,7 @@ export default function LegalEaseApp() {
     checkAuth()
   }, [router, supabase])
 
-  const legalEaseUrl = process.env.NEXT_PUBLIC_LEGALEASE_URL || 'https://crav-legalease.vercel.app'
+  const legalEaseUrl = process.env.NEXT_PUBLIC_LEGALEASE_URL || 'https://craudiovizai.com/apps/legalease'
 
   return (
     <div className="h-screen w-full bg-gray-50">
@@ -203,12 +203,12 @@ export default function LegalEaseApp() {
 **ADD THIS LINE** to your environment variables:
 
 ```bash
-NEXT_PUBLIC_LEGALEASE_URL=https://crav-legalease.vercel.app
+NEXT_PUBLIC_LEGALEASE_URL=https://craudiovizai.com/apps/legalease
 ```
 
 **ALSO ADD TO VERCEL** (Settings → Environment Variables):
 - Name: `NEXT_PUBLIC_LEGALEASE_URL`
-- Value: `https://crav-legalease.vercel.app`
+- Value: `https://craudiovizai.com/apps/legalease`
 - Environments: Production, Preview, Development
 
 ---
@@ -299,7 +299,7 @@ After making these changes:
 ## GIT COMMANDS
 
 ```bash
-# In crav-website directory
+# In javari-website directory
 git add app/apps/page.tsx
 git add app/apps/legalease/page.tsx
 git add .env.local
@@ -323,8 +323,8 @@ git push origin main
 # Check URL is correct
 echo $NEXT_PUBLIC_LEGALEASE_URL
 
-# Verify crav-legalease is deployed
-curl -I https://crav-legalease.vercel.app/embedded
+# Verify javari-legalease is deployed
+curl -I https://craudiovizai.com/apps/legalease/embedded
 ```
 
 **If credits don't work:**

@@ -1,4 +1,4 @@
-# CRAV-WEBSITE INTEGRATION GUIDE
+# javari-WEBSITE INTEGRATION GUIDE
 # How to add LegalEase AI to your Apps page
 
 ## STEP 1: Add to Apps Page
@@ -182,12 +182,12 @@ export default function LegalEaseApp() {
 
 ## STEP 3: Add Environment Variable
 
-**File**: `.env.local` (in crav-website)
+**File**: `.env.local` (in javari-website)
 
 Add this line:
 
 ```bash
-NEXT_PUBLIC_LEGALEASE_URL=https://crav-legalease.vercel.app
+NEXT_PUBLIC_LEGALEASE_URL=https://craudiovizai.com/apps/legalease
 ```
 
 ---
@@ -227,15 +227,15 @@ CREATE INDEX idx_legalease_documents_user_id ON public.legalease_documents(user_
 
 ## STEP 5: Deploy Both Apps
 
-### Deploy crav-legalease:
+### Deploy javari-legalease:
 ```bash
 # Already done! Just push to GitHub
-cd /path/to/crav-legalease
+cd /path/to/javari-legalease
 git push origin main
 # Vercel auto-deploys
 ```
 
-### Update crav-website:
+### Update javari-website:
 ```bash
 # Add the changes from steps 1-3
 git add .
@@ -262,7 +262,7 @@ git push origin main
 ```
 User visits craudiovizai.com/apps/legalease
     ↓
-Parent page loads iframe from crav-legalease.vercel.app/embedded
+Parent page loads iframe from javari-legalease.vercel.app/embedded
     ↓
 Embedded app sends "READY" message
     ↓
@@ -303,7 +303,7 @@ The app automatically switches to standalone mode!
 
 ## CREDIT COSTS
 
-Based on crav-website pricing:
+Based on javari-website pricing:
 - Base conversion: 10 credits
 - Per 1,000 characters: +5 credits
 - Extract key terms: +5 credits
@@ -318,7 +318,7 @@ Example:
 ## NEXT STEPS
 
 1. Push LegalEase changes to GitHub
-2. Add integration code to crav-website
+2. Add integration code to javari-website
 3. Deploy both
 4. Test end-to-end
 5. 🚀 LAUNCH!

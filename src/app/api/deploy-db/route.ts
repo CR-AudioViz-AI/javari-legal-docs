@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
     // Get schema from GitHub
     const schemaResponse = await fetch(
-      'https://raw.githubusercontent.com/CR-AudioViz-AI/crav-legalease/main/database/enterprise-schema.sql'
+      'https://raw.githubusercontent.com/CR-AudioViz-AI/javari-legalease/main/database/enterprise-schema.sql'
     )
     const schema = await schemaResponse.text()
 

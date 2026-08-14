@@ -1,6 +1,6 @@
 /**
  * Embedded Mode Configuration
- * Controls whether app runs standalone or embedded in crav-website
+ * Controls whether app runs standalone or embedded in javari-website
  */
 
 export type AppMode = 'standalone' | 'embedded'
