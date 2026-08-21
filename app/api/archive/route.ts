@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
     let query = supabase
       .from('legalease_documents')
       .select('*')
-      .eq('is_archived', true)
+      // 2026-08-25: legalease_documents has NO is_archived column - it has `status`.
+      // Postgres rejected the filter and the route 500'd on every call.
+      .eq('status', 'archived')
       .order('archived_at', { ascending: false })
       .limit(limit)
 
@@ -59,7 +61,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from('legalease_documents')
       .update({
-        is_archived: true,
+        status: 'archived',
         archived_at: new Date().toISOString(),
         archived_by,
         archive_reason,
