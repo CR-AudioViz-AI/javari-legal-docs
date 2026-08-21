@@ -14,16 +14,21 @@ export async function GET(request: NextRequest) {
     const approver_id = searchParams.get('approver_id')
     const status = searchParams.get('status') || 'pending'
 
+    // 2026-08-25: the embedded resource was workflow_steps(*). PostgREST answered
+    // "Could not find a relationship ... in the schema cache" and the route 500'd
+    // on every call - document_approvals.workflow_id has a foreign key to
+    // approval_workflows, NOT workflow_steps. Verified against pg_constraint.
+    //
+    // The comment lives HERE, not inside the template literal: PostgREST parses
+    // that string as a column list, so a // comment inside it is sent to the
+    // server as a column name. My first attempt did exactly that and turned a
+    // relationship error into a parse error.
     let query = supabase
       .from('document_approvals')
       .select(`
         *,
         document:legalease_documents(id, title),
-          // 2026-08-25: was workflow_steps(*). PostgREST answered "Could not find a
-          // relationship ... in the schema cache" and the route 500'd on every call.
-          // document_approvals.workflow_id has a foreign key to approval_workflows,
-          // NOT workflow_steps - verified against pg_constraint.
-          workflow:approval_workflows(*)
+        workflow:approval_workflows(*)
       `)
       .order('created_at', { ascending: false })
 
