@@ -19,7 +19,11 @@ export async function GET(request: NextRequest) {
       .select(`
         *,
         document:legalease_documents(id, title),
-        workflow_step:workflow_steps(*)
+          // 2026-08-25: was workflow_steps(*). PostgREST answered "Could not find a
+          // relationship ... in the schema cache" and the route 500'd on every call.
+          // document_approvals.workflow_id has a foreign key to approval_workflows,
+          // NOT workflow_steps - verified against pg_constraint.
+          workflow:approval_workflows(*)
       `)
       .order('created_at', { ascending: false })
 

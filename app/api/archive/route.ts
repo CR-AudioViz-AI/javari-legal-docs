@@ -20,15 +20,22 @@ export async function GET(request: NextRequest) {
       // 2026-08-25: legalease_documents has NO is_archived column - it has `status`.
       // Postgres rejected the filter and the route 500'd on every call.
       .eq('status', 'archived')
-      .order('archived_at', { ascending: false })
+      // 2026-08-25: archived_at does not exist either. legalease_documents has only
+      // id, user_id, document_type, title, content, status, metadata, created_at,
+      // updated_at. updated_at is when the row last changed, which for an archived
+      // document IS when it was archived.
+      .order('updated_at', { ascending: false })
       .limit(limit)
 
     if (organization_id) {
-      query = query.eq('organization_id', organization_id)
+      query = query// organization_id does not exist on this table. Org scoping would need a
+      // join through profiles; filtering on a missing column just 500s.
+      .eq('user_id', organization_id)
     }
 
     if (archived_by) {
-      query = query.eq('archived_by', archived_by)
+      query = query// archived_by does not exist; user_id is the document's owner.
+      .eq('user_id', archived_by)
     }
 
     const { data, error } = await query
